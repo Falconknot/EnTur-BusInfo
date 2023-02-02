@@ -57,7 +57,7 @@
     busInfo.innerHTML = '';
 
     estimatedCalls.forEach(call => {
-      const expectedDepartureTime = new Date(call.expectedDepartureTime).toLocaleTimeString("en-GB", {hour: '2-digit', minute: '2-digit'});
+      const expectedDepartureTime = new Date(call.expectedDepartureTime).toLocaleTimeString("en-GB", {hour: '2-digit', minute: '2-digit', second: '2-digit'});
       const frontText = call.destinationDisplay.frontText;
       const publicCode = call.serviceJourney.line.publicCode;
       
@@ -72,7 +72,7 @@
   }
 
   getBusInfo();
-  setInterval(getBusInfo, 30000);
+  setInterval(getBusInfo, 1000);
     </script>
   </body>
   <style>
