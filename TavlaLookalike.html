@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Bus Information</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Bus Information</h1>
+    </header>
+    <div class="container">
+      <table id="bus-info">
+        <thead>
+          <tr>
+            <th>Bus Time</th>
+            <th>Bus Name</th>
+            <th>Bus Number</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <script>
+      const query = `{
+        stopPlace(id: "NSR:StopPlace:4977") {
+          estimatedCalls(numberOfDepartures: 10, whiteListedModes: [bus]) {
+            expectedDepartureTime
+            destinationDisplay {
+              frontText
+            }
+            serviceJourney {
+              line {
+                publicCode
+              }
+            }
+          }
+        }
+      }`;
+
+  const busInfo = document.querySelector('#bus-info tbody');
+
+  async function getBusInfo() {
+    const response = await fetch('https://api.entur.io/journey-planner/v2/graphql', {
+      method: 'POST',
+      headers: {
+        'ET-Client-Name': 'awesomecompany-awesomeapp',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ query })
+    });
+    const data = await response.json();
+    const estimatedCalls = data.data.stopPlace.estimatedCalls;
+
+    busInfo.innerHTML = '';
+
+    estimatedCalls.forEach(call => {
+      const expectedDepartureTime = new Date(call.expectedDepartureTime).toLocaleTimeString("en-GB", {hour: '2-digit', minute: '2-digit'});
+      const frontText = call.destinationDisplay.frontText;
+      const publicCode = call.serviceJourney.line.publicCode;
+      
+      busInfo.innerHTML += `
+        <tr>
+          <td>${expectedDepartureTime}</td>
+          <td>${frontText}</td>
+          <td>${publicCode}</td>
+        </tr>
+      `;
+    });
+  }
+
+  getBusInfo();
+  setInterval(getBusInfo, 30000);
+    </script>
+  </body>
+  <style>
+    * {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+}
+
+header {
+  background-color: #333;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+}
+
+.container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+}
+
+th {
+  background-color: #333;
+  color: #fff;
+}
+
+
+  </style>
+</html>
