@@ -25,70 +25,57 @@
     </div>
     <script>
         const query = `{
-  stopPlace(id: "NSR:StopPlace:4977") {
-    estimatedCalls(numberOfDepartures: 10, whiteListedModes: [bus]) {
-      expectedDepartureTime
-      destinationDisplay {
-        frontText
-      }
-      serviceJourney {
-        line {
-          publicCode
+    stopPlace(id: "NSR:StopPlace:4977") {
+      estimatedCalls(numberOfDepartures: 10, whiteListedModes: [bus]) {
+        expectedDepartureTime
+        aimedDepartureTime
+        destinationDisplay {
+          frontText
+        }
+        serviceJourney {
+          line {
+            publicCode
+          }
         }
       }
     }
-  }
-}`;
-
-const busInfo = document.querySelector("#bus-info tbody");
-
-async function fetchBusInfo() {
-  const response = await fetch("https://api.entur.io/journey-planner/v2/graphql", {
-    method: "POST",
-    headers: {
-      "ET-Client-Name": "awesomecompany-awesomeapp",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ query })
-  });
-
-  const data = await response.json();
-  const estimatedCalls = data.data.stopPlace.estimatedCalls;
-
-  busInfo.innerHTML = "";
-
-  estimatedCalls.forEach(call => {
-    const expectedDepartureTime = new Date(
-      call.expectedDepartureTime
-    ).toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
+  }`;
+  
+  const busInfo = document.querySelector('#bus-info tbody');
+  
+  async function getBusInfo() {
+    const response = await fetch('https://api.entur.io/journey-planner/v2/graphql', {
+      method: 'POST',
+      headers: {
+        'ET-Client-Name': 'awesomecompany-awesomeapp',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ query })
     });
-    const frontText = call.destinationDisplay.frontText;
-    const publicCode = call.serviceJourney.line.publicCode;
-
-    const tr = document.createElement("tr");
-
-    const tdTime = document.createElement("td");
-    tdTime.textContent = expectedDepartureTime;
-    tr.appendChild(tdTime);
-
-    const tdName = document.createElement("td");
-    tdName.textContent = frontText;
-    tr.appendChild(tdName);
-
-    const tdNumber = document.createElement("td");
-    tdNumber.textContent = publicCode;
-    tr.appendChild(tdNumber);
-
-    busInfo.appendChild(tr);
-  });
-}
-
-fetchBusInfo();
-setInterval(fetchBusInfo, 1000);
-
+    const data = await response.json();
+    const estimatedCalls = data.data.stopPlace.estimatedCalls;
+  
+    busInfo.innerHTML = '';
+  
+    estimatedCalls.forEach(call => {
+      const aimedDepartureTime = new Date(call.aimedDepartureTime).toLocaleTimeString("en-GB", {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+      const expectedDepartureTime = new Date(call.expectedDepartureTime).toLocaleTimeString("en-GB", {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+      const frontText = call.destinationDisplay.frontText;
+      const publicCode = call.serviceJourney.line.publicCode;
+      
+      busInfo.innerHTML += `
+        <tr>
+          <td>${aimedDepartureTime} (${expectedDepartureTime})</td>
+          <td>${frontText}</td>
+          <td>${publicCode}</td>
+        </tr>
+      `;
+    });
+  }
+  
+  getBusInfo();
+  setInterval(getBusInfo, 1000);
+  
     </script>
   </body>
   <style>
@@ -141,3 +128,4 @@ tr:nth-child(odd) {
 
   </style>
 </html>
+
